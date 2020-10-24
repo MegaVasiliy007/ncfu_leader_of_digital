@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<%- include('templates/head') %>
+</head>
+<body>
+<%- include('templates/header') %>
+<ul class="breadcrumbs container">
+    <li class="breadcrumbs__item"><a href="/" class="breadcrumbs__itemLink">Главная</a></li>
+    <% if(userType == 'comp') {%>
+    <li class="breadcrumbs__item">Студенты</li>
+    <%} else if(userType == 'stud') {%>
+    <li class="breadcrumbs__item">Отправленные заявки</li>
+    <%}%>
+</ul>
+<main class="container">
+    <ul class="requestWrapper">
+        <% if(userType == 'comp') {%>
+        <% for (let student of data ) {%>
+        <li>
+            <article class="card horizontalCard">
+                <img src="<%= student.logo ? `/image/students/${student.studID}.jpg` : '/image/students/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                <div class="horizontalCard__content">
+                    <h2><a href="/student/<%= student.studID %>" class="card__link text_weightNormal"><%= student.fio %></a></h2>
+                    <ul class="horizontalCard__direction directionList">
+                        <li class="directionList__item">Вакансия:</li>
+                        <li class="directionList__item text_colorAccent"><%= student.catName %></li>
+                    </ul>
+                    <ul class="cardDescriptionList">
+                        <li class="cardDescriptionList__item">Уровень подготовки:<%= student.levelLearn %></li>
+                        <li class="cardDescriptionList__item">Курс: <%= student.course %></li>
+                    </ul>
+                    <% if( student.statID == 1 ) {%>
+                        <span class="card__requestStatus text_weightMedium text_colorGray3" aria-label="Статус заявки" title="Статус заявки">На обработке...</span>
+                    <%} else if( student.statID == 2 ) {%>
+                        <span class="card__requestStatus text_weightMedium text_colorRed" aria-label="Статус заявки" title="Статус заявки">Отклонено</span>
+                    <%} else if ( student.statID == 3 || student.statID === 4 ) {%>
+                        <p class="card__requestStatus text_weightMedium text_colorGreen" aria-label="Статус заявки" title="Статус заявки">Принято</p>
+                    <%}%>
+                </div>
+            </article>
+        </li>
+        <%}%>
+        <%} else if(userType == 'stud') {%>
+            <% for (let company of data ) {%>
+                <li>
+                    <article class="card horizontalCard">
+                        <img src="<%= company.logo ? `/image/companies/${company.compID}.jpg` : '/image/companies/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                        <div class="horizontalCard__content">
+                            <h2><a href="/company/<%= company.compID %>" class="card__link text_weightNormal"><%= company.shortName %></a></h2>
+                            <ul class="horizontalCard__direction directionList">
+                                <li class="directionList__item">Вакансия:</li>
+                                <li class="directionList__item text_colorAccent"><%= company.catName %></li>
+                            </ul>
+                            <p class="cardDescriptionList"><%= company.information %></p>
+                            <% if( company.statID == 1 ) {%>
+                                <p class="card__requestStatus text_weightMedium text_colorGray3" aria-label="Статус заявки" title="Статус заявки">Заявка в обработке...</p>
+                            <%} else if( company.statID == 2 ) {%>
+                                <p class="card__requestStatus text_weightMedium text_colorRed" aria-label="Статус заявки" title="Статус заявки">Отклонено</p>
+                            <%} else if( company.statID == 4 ) {%>
+                                <p class="card__requestStatus text_weightMedium text_colorGreen" aria-label="Статус заявки" title="Статус заявки">Принято</p>
+                            <%}%>
+                        </div>
+                    </article>
+                </li>
+            <%}%>
+        <%}%>
+    </ul>
+</main>
+<div class="overlay" data-close=""></div>
+<%- include('templates/footer') %>
+</body>
+</html>

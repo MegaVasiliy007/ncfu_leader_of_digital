@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<%- include('templates/head') %>
+</head>
+<body>
+<%- include('templates/header', {profileIcon: pageType == userType}) %>
+<ul class="breadcrumbs container">
+    <li class="breadcrumbs__item"><a href="/" class="breadcrumbs__itemLink">Главная</a></li>
+    <li class="breadcrumbs__item">Аккаунт</li>
+</ul>
+<main class="container">
+    <!--  stud  -->
+    <% if (pageType == 'stud') {%>
+    <ul class="tabs">
+        <li class="tabs__item"><label class="tab tab_active" data-tab="0"><input class="hidden" name="tabGroup" type="radio" checked>Аккаунт</label></li>
+        <li class="tabs__item"><label class="tab" tabindex="0" data-tab="1"><input class="hidden" name="tabGroup" type="radio">Оценки</label></li>
+    </ul>
+
+    <div class="tabsContent">
+        <div class="tabsContent__item tabsContent__item_active">
+            <div class="profile__head">
+                <img src="<%= data.logo ? `/image/students/${data.studID}.jpg` : '/image/students/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeL">
+                <h1 class="profile__name text_weightMedium"><%= data.fio %></h1>
+            </div>
+
+            <section>
+                <hr>
+                <h2 class="profile__sectionHeading text_colorAccent">Информация</h2>
+                <ul class="profile__list">
+                    <li class="profile__listItem">Направление подготовки: <%= data.napravName %></li>
+                    <li class="profile__listItem">Уровень подготовки: <%= data.levelLearn %></li>
+                    <li class="profile__listItem">Форма обучения: <%= data.formLearn %></li>
+                    <li class="profile__listItem">Кафедра: <%= data.depName %></li>
+                    <li class="profile__listItem">Группа: <%= data.stGroup %></li>
+                    <li class="profile__listItem">Курс: <%= data.course %></li>
+                </ul>
+                <hr>
+            </section>
+
+            <% for (let dateName of dates.map(el => el.name).filter((el, ind, arr) => arr.indexOf(el) === ind)) {%>
+                <% if (dates.filter(el => el.name === dateName).length) {%>
+            <section>
+                <h2 class="profile__sectionHeading text_colorAccent"><%= dateName %></h2>
+                <ul class="profile__list">
+                <% for (let date of dates.filter(el => el.name === dateName)) {%>
+                    <% if (date.beginDate > Date.now()) {%>
+                    <li class="profile__practice profile__listItem text_colorGray4">
+                        <span class="profile__practiceName"><%= date.type.slice(0, 1).toUpperCase() + date.type.slice(1) %></span>
+                        <span class="profile__practiceTerm">Дни: <%= date.countDays %></span>
+                        <time class="profile__practiceDate">
+                            <%= ('00' + date.beginDate.getDate()).slice(-2) + '.' + ('00' + (date.beginDate.getMonth() + 1)).slice(-2) + '.' + date.beginDate.getFullYear() %> — <%= ('00' + date.endDate.getDate()).slice(-2) + '.' + ('00' + (date.endDate.getMonth() + 1)).slice(-2) + '.' + date.endDate.getFullYear() %>
+                        </time>
+                        <span>Ожидается</span>
+                    </li>
+                    <%} else if (date.endDate < Date.now()) {%>
+                    <li class="profile__practice profile__listItem">
+                        <span class="profile__practiceName"><%= date.type.slice(0, 1).toUpperCase() + date.type.slice(1) %></span>
+                        <span class="profile__practiceTerm">Дни: <%= date.countDays %></span>
+                        <time class="profile__practiceDate">
+                            <%= ('00' + date.beginDate.getDate()).slice(-2) + '.' + ('00' + (date.beginDate.getMonth() + 1)).slice(-2) + '.' + date.beginDate.getFullYear() %> — <%= ('00' + date.endDate.getDate()).slice(-2) + '.' + ('00' + (date.endDate.getMonth() + 1)).slice(-2) + '.' + date.endDate.getFullYear() %>
+                        </time>
+                        <span>Завершена</span>
+                    </li>
+                    <%} else {%>
+                    <li class="profile__practice profile__listItem text_colorAccent">
+                        <span class="profile__practiceName"><%= date.type.slice(0, 1).toUpperCase() + date.type.slice(1) %></span>
+                        <span class="profile__practiceTerm">Дни: <%= date.countDays %></span>
+                        <time class="profile__practiceDate">
+                            <%= ('00' + date.beginDate.getDate()).slice(-2) + '.' + ('00' + (date.beginDate.getMonth() + 1)).slice(-2) + '.' + date.beginDate.getFullYear() %> — <%= ('00' + date.endDate.getDate()).slice(-2) + '.' + ('00' + (date.endDate.getMonth() + 1)).slice(-2) + '.' + date.endDate.getFullYear() %>
+                        </time>
+                        <span>В процессе</span>
+                    </li>
+                    <%}%>
+                <%}%>
+                </ul>
+                <hr>
+            </section>
+                <%}%>
+            <%}%>
+
+            <ul class="profile__list">
+                <% if (userType == 'stud') {%>
+                <li class="resume profile__listItem">
+                    <span>Резюме:  </span>
+                    <% if(data.summary) {%>
+                    <p>
+                        <a href="/resume/<%= data.studID %>.pdf" target="_blank" rel="noreferrer" class="resume__item" title="Открыть резюме">Открыть</a>
+                        <span> / </span>
+                        <form id="profileResume" method="post" action="/uploadResume" enctype="multipart/form-data">
+                            <input type="file" id="editResume" name="resume" accept="application/pdf" class="input_hidden">
+                            <label for="editResume" class="resume__item" title="Загрузить новое резюме">Загрузить</label>
+                        </form>
+                    </p>
+                    <%} else {%>
+                        <form id="profileResume" method="post" action="/uploadResume" enctype="multipart/form-data">
+                            <label for="editResume" class="button button_loader text_weightNormal" tabindex="0">Загрузить</label>
+                            <input type="file" id="editResume" name="resume" accept="application/pdf" class="input_hidden">
+                        </form>
+                        <a href="/resume/template.docx" target="_blank" rel="noreferrer" class="resume__downloadTemplate text_colorAccent">Скачать шаблон</a>
+                    <%}%>
+                    <script>
+                        document.getElementById('editResume').onchange = () => {
+                            alert('Резюме успешно загружено');
+                            document.getElementById('profileResume').submit();
+                        }
+                    </script>
+                </li>
+                <%} else if(userType == 'comp' || userType == 'org') {%>
+                    <li class="resume profile__listItem">
+                        <span>Резюме:  </span>
+                        <% if(data.summary) {%>
+                        <a href="/resume/<%= data.studID %>.pdf" target="_blank" rel="noreferrer" class="button button_loader">Открыть</a>
+                        <%} else {%>
+                        <span class="text_colorRed">не загружено</span>
+                        <%}%>
+                    </li>
+                <%}%>
+                <li class="profile__listItem"><span>Телефон: </span><%- data.phone ?  `<a href="tel:+7${ data.phone }"  class="link textColor_gray">+7${ data.phone }</a>` : `<span class="text_colorRed">поле не заполнено</span>` %></li>
+                <li class="profile__listItem"><span>E-mail: </span><%- data.login ?  `<a href="mailto: ${data.login}" class="link textColor_gray">${ data.login }</a>` : `<span class="text_colorRed">поле не заполнено</span>` %></li>
+                <% if (data.inst || data.fb || data.telega || data.vk) {%>
+                    <li class="profile__listItem">
+                        <span>Соц. сети:</span>
+                        <ul class="profile__social social">
+                            <% if( data.inst ) {%>
+                                <li class="social__icon"><a href="<%= data.inst %>" class="link" rel="noreferrer" target="_blank" aria-label="Instagram" lang="en"><svg aria-hidden="true" class="icon"><use xlink:href="/image/sprite.svg#instagram"></use></svg></a></li>
+                            <%} if( data.fb ) {%>
+                                <li class="social__icon"><a href="<%= data.fb %>" class="link" rel="noreferrer" target="_blank" aria-label="Facebook" lang="en"><svg aria-hidden="true"  class="icon"><use xlink:href="/image/sprite.svg#facebook"></use></svg></a></li>
+                            <%} if( data.telega ) {%>
+                                <li class="social__icon"><a href="<%= data.telega %>" class="link" rel="noreferrer" target="_blank" aria-label="Telegram" lang="en"><svg aria-hidden="true"  class="icon"><use xlink:href="/image/sprite.svg#telegram"></use></svg></a></li>
+                            <%} if( data.vk ) {%>
+                                <li class="social__icon"><a href="<%= data.vk %>" class="link" rel="noreferrer" target="_blank" aria-label="ВКонтакте"><svg aria-hidden="true"  class="icon"><use xlink:href="/image/sprite.svg#vk"></use></svg></a></li>
+                            <%}%>
+                        </ul>
+                    </li>
+                <%}%>
+
+                <% if(userType == 'comp'){%>
+                    <li class="directionSelect">
+                        <hr>
+                        <button class="directionSelect__button text_colorAccent text_weightNormal" aria-label="Открыть список вакансий">Вакансии</button>
+                        <ul class="directionSelect__list">
+                            <% for( let name of reqCat ) {%>
+                                <li class="directionSelect__listItem">
+                                    <input type="radio" name="direction" id="<%= name.catID%>" class="input_hidden">
+                                    <label for="<%= name.catID%>" class="form__radio"><%= name.name %></label>
+                                </li>
+                            <%}%>
+                        </ul>
+                        <button id="direction__button" class="directionSelect__buttonSubmit button_sizeS button_colorAccent" disabled>Отправить заявку</button>
+                    </li>
+
+                    <script src="/socket.io/socket.io.js"></script>
+                    <script>
+                        let dircectionButton = document.querySelector('#direction__button'),
+                            directions       = document.querySelectorAll('[name="direction"]');
+
+                        directions.forEach( el => {
+                            el.onclick = () => { dircectionButton.removeAttribute('disabled')}
+                        });
+
+                        let socket = io();
+                        dircectionButton.addEventListener('click', () => {
+                            let results = Array.from(directions).filter(el => el.checked);
+
+                            for( let result of results ){
+                                socket.emit('sendRequest', location.pathname.slice(location.pathname.lastIndexOf('/')+1), result.id);
+                            }
+                        });
+
+                        socket.on('sendAnswer', () => {
+                            alert('Заявка успешно отправлена!');
+                            location.reload();
+                        });
+                    </script>
+               <%} else if (userType == 'stud') {%>
+                    <li class="profile__listItem">
+                        <hr>
+                        <button class="profile__buttonEdit text_colorAccent" data-modal="modalProfileEdit">Редактировать профиль<svg aria-hidden="true" class="profile__iconEdit"><use xlink:href="/image/sprite.svg#edit"></use></svg></button>
+                    </li>
+                <%}%>
+            </ul>
+        </div>
+
+        <ul class="tabsContent__item profileMarks">
+        <% if (userType === 'comp' && request) {%>
+            <li>
+                <article class="card">
+                    <h2 class="evaluationForm__headline text_positionCenter text_weightNormal">Написать отзыв о студенте</h2>
+                    <header class="verticalCard__header">
+                        <div class="verticalCard__name">
+                            <img src="<%= user.logo ? `/image/companies/${user.auth.compID}.jpg` : '/image/companies/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                            <h2><%= user.name %></h2>
+                        </div>
+                        <fieldset id="rating" class="inputRating__group">
+                            <input class="inputRating__checkbox" type="radio" name="rating" id="health-1" value="1" checked>
+                            <label class="inputRating__star"  for="health-1" aria-label="Ужасно"></label>
+                            <input class="inputRating__checkbox" type="radio" name="rating" id="health-2" value="2">
+                            <label class="inputRating__star"  for="health-2" aria-label="Сносно"></label>
+                            <input class="inputRating__checkbox" type="radio" name="rating" id="health-3" value="3">
+                            <label class="inputRating__star"  for="health-3" aria-label="Нормально"></label>
+                            <input class="inputRating__checkbox" type="radio" name="rating" id="health-4" value="4">
+                            <label class="inputRating__star"  for="health-4" aria-label="Хорошо"></label>
+                            <input class="inputRating__checkbox" type="radio" name="rating" id="health-5" value="5">
+                            <label class="inputRating__star"  for="health-5" aria-label="Отлично"></label>
+                        </fieldset>
+                    </header>
+                    <textarea class="evaluationForm__textarea" placeholder="Отзыв о cтуденте..." id="information" rows="5" maxlength="280"></textarea>
+                    <footer>
+                        <% let date = new Date(); %>
+                        <p>Дата: <time class="text_colorAccent" datetime="<%= date.getFullYear() + '-' + ('00' + (date.getMonth() + 1)).slice(-2) + '-' + ('00' + date.getDate()).slice(-2) %>"><%= ('00' + date.getDate()).slice(-2) + '.' + ('00' + (date.getMonth() + 1)).slice(-2) + '.' + date.getFullYear() %></time></p>
+                        <div class="card__buttonGroup">
+                            <button id="button_request" class="button button_sizeS button_colorAccent"><%= marks.filter(el => el.compID === user.auth.compID).length ? 'Изменить' : 'Отправить' %></button>
+                        </div>
+                    </footer>
+                </article>
+            </li>
+            <script>
+                document.getElementById('button_request').onclick = () => {
+                    socket.emit('addComment',
+                        location.pathname.slice(location.pathname.lastIndexOf('/')+1),
+                        document.getElementById('rating').querySelector('input:checked').value,
+                        document.getElementById('information').value
+                    );
+                };
+
+               socket.on('sendAnswer', () => location.reload());
+            </script>
+            <% } %>
+
+            <% for (let mark of marks) {%>
+            <li>
+                <article class="card">
+                    <header class="verticalCard__header">
+                        <div class="verticalCard__name">
+                            <a href="/company/<%= mark.compID %>"><img src="<%= mark.logo ? `/image/companies/${mark.compID}.jpg` : '/image/companies/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM"></a>
+                            <h2><a href="/company/<%= mark.compID %>"><%= mark.name %></a></h2>
+                        </div>
+                        <div class="outputRating">
+                            <% for(let i = 0; i < 5; i++) {
+                                if(i < mark.mark) { %>
+                                    <div class="outputRating__star outputRating__star_active"></div>
+                                <%} else { %>
+                                    <div class="outputRating__star"></div>
+                                <%}
+                            }%>
+                            <p class="outputRating__mark"><%= mark.mark %></p>
+                        </div>
+                    </header>
+                    <p class="verticalCard__content"><%= mark.text %></p>
+                    <footer>
+                        <p>Дата: <time class="text_colorAccent" datetime="<%= mark.date.getFullYear() + '-' + ('00' + (mark.date.getMonth() + 1)).slice(-2) + '-' + ('00' + mark.date.getDate()).slice(-2) %>"><%= ('00' + mark.date.getDate()).slice(-2) + '.' + ('00' + (mark.date.getMonth() + 1)).slice(-2) + '.' + mark.date.getFullYear() %></time></p>
+                    </footer>
+                </article>
+            </li>
+            <%}%>
+        </ul>
+    </div>
+
+    <div class="overlay" data-close=""></div>
+    <div id="modalProfileEdit" class="modal">
+        <button class="modal__close" data-close="" aria-label="Закрыть" title="Закрыть"></button>
+
+        <form id="profilePhoto" method="post" action="/upload/student" enctype="multipart/form-data">
+            <div>
+                <img src="<%= data.logo ? `/image/students/${data.studID}.jpg` : '/image/students/userDefault.png' %>" alt="Фото профиля" class="profileEdit__photo profile__photo profile__photo_sizeL">
+                <label for="editPhoto" class="button_loader" tabindex="0" aria-label="Загрузить фото профиля">Загрузить</label>
+                <input type="file" id="editPhoto" name="avatar" accept="image/png,image/jpeg" class="hidden">
+            </div>
+        </form>
+        <script>
+            document.getElementById('editPhoto').onchange = () => {document.getElementById('profilePhoto').submit()}
+        </script>
+
+        <form action="/edit" method="POST" class="profileEdit">
+            <section class="studProfileEdit__basicInformation">
+                <h2 class="profile__sectionHeading text_colorAccent">Основная информация</h2>
+                <label class="form__label">
+                    <span class="phonePrefix">+7</span>
+                    <input type="text" name="phone" class="form__input" value="<%= data.phone %>">
+                    <span class="labelText">Телефон</span>
+                </label>
+            </section>
+
+            <section>
+                <h2 class="profile__sectionHeading text_colorAccent">Социальные сети</h2>
+                <ul class="profileEdit__list">
+                    <li>
+                        <label class="form__label">
+                            <input type="text" name="inst" class="form__input" value="<%= data.inst %>">
+                            <span class="labelText" lang="en">Instagram</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="form__label">
+                            <input type="text" name="fb" class="form__input" value="<%= data.fb %>">
+                            <span class="labelText" lang="en">Facebook</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="form__label">
+                            <input type="text" name="telega" class="form__input" value="<%= data.telega %>">
+                            <span class="labelText" lang="en">Telegram</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="form__label">
+                            <input type="text" name="vk" class="form__input" value="<%= data.vk %>">
+                            <span class="labelText">ВКонтакте</span>
+                        </label>
+                    </li>
+                </ul>
+            </section>
+            <button class="button_sizeM button_colorAccent">Сохранить</button>
+        </form>
+    </div>
+    <%}%>
+    <!--  /stud  -->
+
+    <!--  comp  -->
+    <% if(pageType == 'comp') {%>
+
+    <ul class="tabs">
+        <li class="tabs__item"><label class="tab tab_active" data-tab="0"><input class="hidden" name="tabGroup" type="radio" checked>Аккаунт</label></li>
+        <li class="tabs__item"><label class="tab" tabindex="0" data-tab="1"><input class="hidden" name="tabGroup" type="radio">Отзывы</label></li>
+    </ul>
+
+    <div class="tabsContent">
+        <div class="tabsContent__item tabsContent__item_active">
+            <div class="profile__head">
+                <img src="<%= data.logo ? `/image/companies/${data.compID}.jpg` : '/image/companies/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeL">
+                <h1 class="profile__name"><%= data.shortName %></h1>
+            </div>
+            <% if (data.information) {%>
+                <div class="profile__description">
+                    <hr><p><%= data.information %></p>
+                </div>
+            <%}%>
+
+            <% if(userType == 'comp' || userType == 'org') {%>
+            <section>
+                <hr><h2 class="profile__sectionHeading text_colorAccent">Реквизиты</h2>
+                <ul class="profile__list">
+                    <li class="profile__listItem">Краткое наименование: <%- data.shortName || '<span class="text_colorRed">поле не заполнено</span>' %></li>
+                    <li class="profile__listItem">Полное наименование: <%- data.name || '<span class="text_colorRed">поле не заполнено</span>' %></li>
+                    <li class="profile__listItem"><span>Сайт: </span><%- data.site ? `<a href="${data.site}" class="link textColor_gray" target="_blank" rel="noopener">${data.site}</a>` : '<span class="text_colorRed">поле не заполнено</span>' %></li>
+                    <li class="profile__listItem">Адрес: <%- data.address || '<span class="text_colorRed">поле не заполнено</span>' %></li>
+                    <li class="profile__listItem">ИНН: <%- data.inn || '<span class="text_colorRed">поле не заполнено</span>' %></li>
+                    <li class="profile__listItem">КПП: <%- data.kpp || '<span class="text_colorRed">поле не заполнено</span>' %></li>
+                </ul>
+            </section>
+
+            <section>
+                <hr><h2 class="profile__sectionHeading text_colorAccent">Руководитель компании</h2>
+                <ul class="profile__list">
+                    <li class="profile__listItem">ФИО: <%- data.ownerFIO || '<span class="text_colorRed">поле не заполнено</span>' %></li>
+                    <li class="profile__listItem">Должность: <%- data.appointment || '<span class="text_colorRed">поле не заполнено</span>' %></li>
+                    <li class="profile__listItem">Действует на основании: <%- data.command || '<span class="text_colorRed">поле не заполнено</span>' %></li>
+                </ul>
+            </section>
+
+            <%} else if (userType == 'stud') {%>
+                <% if(data.names && data.names.length) {%>
+                    <hr>
+                    <ul class="profile__invite directionList">
+                        <li class="directionList__item">Здравствуйте, <%= user.name %>, «<%= data.name %>» приглашает Вас на работу в своей компании по вакансия(м):</li>
+                        <% for(let name of data.names) {%>
+                            <li class="directionList__item text_colorAccent"><%= allCategory.find(el => el.catID === name.catID).name %></li>
+                        <%}%>
+                    </ul>
+                <%} else {%>
+                    <p class="profile__invite">Здравствуйте, <%= user.name %>, «<%= data.name %>» приглашает Вас на работу в своей компании.</p>
+                <%}%>
+
+                <ul class="profile__list">
+                    <li class="profile__listItem_identSmall"><span>Телефон: </span><%- data.phone ?  `<a href="tel:+7${ data.phone }"  class="link textColor_gray">+7${ data.phone }</a>` : `<span class="text_colorRed">поле не заполнено</span>` %></li>
+                    <li class="profile__listItem_identSmall"><span>E-mail: </span><%- data.email ?  `<a href="mailto: ${data.email}" class="link textColor_gray">${ data.email }</a>` : `<span class="text_colorRed">поле не заполнено</span>` %></li>
+
+                    <% if (data.inst || data.fb || data.telega || data.vk) {%>
+                        <li class="profile__listItem_identSmall">
+                            <span>Соц. сети:</span>
+                            <ul class="profile__social social">
+                                <% if( data.inst ) {%>
+                                    <li class="social__icon"><a href="<%= data.inst %>" class="link" rel="noreferrer" target="_blank" aria-label="Instagram" lang="en"><svg aria-hidden="true" class="icon"><use xlink:href="/image/sprite.svg#instagram"></use></svg></a></li>
+                                <%} if( data.fb ) {%>
+                                    <li class="social__icon"><a href="<%= data.fb %>" class="link" rel="noreferrer" target="_blank" aria-label="Facebook" lang="en"><svg aria-hidden="true"  class="icon"><use xlink:href="/image/sprite.svg#facebook"></use></svg></a></li>
+                                <%} if( data.telega ) {%>
+                                    <li class="social__icon"><a href="<%= data.telega %>" class="link" rel="noreferrer" target="_blank" aria-label="Telegram" lang="en"><svg aria-hidden="true"  class="icon"><use xlink:href="/image/sprite.svg#telegram"></use></svg></a></li>
+                                <%} if( data.vk ) {%>
+                                    <li class="social__icon"><a href="<%= data.vk %>" class="link" rel="noreferrer" target="_blank" aria-label="ВКонтакте"><svg aria-hidden="true"  class="icon"><use xlink:href="/image/sprite.svg#vk"></use></svg></a></li>
+                                <%}%>
+                            </ul>
+                        </li>
+                    <%}%>
+                </ul>
+
+                <li class="directionSelect">
+                    <hr>
+                    <button class="directionSelect__button text_colorAccent text_weightNormal" aria-label="Открыть список вакансий">Вакансии на странице компаний</button>
+                    <ul class="directionSelect__list">
+                        <% for ( let name of data.names.filter(el => el.count - (countRequest.find(els => els.catID === el.catID) ? countRequest.find(els => els.catID === el.catID).count : 0) > 0) ) {%>
+                            <li class="directionSelect__listItem">
+                                <input type="radio" name="direction" id="<%= name.catID%>" class="input_hidden">
+                                <label for="<%= name.catID%>" class="form__radio"><%= allCategory.find(el => el.catID === name.catID).name %></label>
+                            </li>
+                        <%}%>
+                    </ul>
+                    <button id="direction__button" class="directionSelect__buttonSubmit button_sizeS button_colorAccent" disabled>Отправить заявку</button>
+                </li>
+
+                <script src="/socket.io/socket.io.js"></script>
+                <script>
+                    let dircectionButton = document.querySelector('#direction__button'),
+                        directions       = document.querySelectorAll('[name="direction"]');
+
+                    directions.forEach( el => {
+                        el.onclick = () => { dircectionButton.removeAttribute('disabled')}
+                    });
+
+                    let socket = io();
+                    dircectionButton.addEventListener('click', () => {
+                        let results = Array.from(directions).filter(el => el.checked);
+
+                        for( let result of results ){
+                            socket.emit('sendRequest', location.pathname.slice(location.pathname.lastIndexOf('/')+1), result.id);
+                        }
+                    });
+
+                    socket.on('sendAnswer', () => {
+                        alert('Заявка успешно отправлена!');
+                        location.reload();
+                    });
+                </script>
+            <%}%>
+            <% if (userType == 'comp' || userType === 'org') {%>
+                <hr>
+                <ul class="profile__list">
+                    <li class="profile__listItem_identSmall"><span>Телефон: </span><%- data.phone ?  `<a href="tel:+7${ data.phone }" class="link textColor_gray">+7${ data.phone }</a>` : `<span class="text_colorRed">поле не заполнено</span>` %></li>
+                    <li class="profile__listItem_identSmall"><span>E-mail: </span><%- data.email ?  `<a href="mailto: ${data.email}" class="link textColor_gray">${ data.email }</a>` : `<span class="text_colorRed">поле не заполнено</span>` %></li>
+                    <% if (data.inst || data.fb || data.telega || data.vk) {%>
+                        <li class="profile__listItem_identSmall">
+                            <span>Соц. сети:</span>
+                            <ul class="profile__social social">
+                                <% if( data.inst ) {%>
+                                    <li class="social__icon"><a href="<%= data.inst %>" class="link" rel="noreferrer" target="_blank" aria-label="Instagram" lang="en"><svg aria-hidden="true" class="icon"><use xlink:href="/image/sprite.svg#instagram"></use></svg></a></li>
+                                <%} if( data.fb ) {%>
+                                    <li class="social__icon"><a href="<%= data.fb %>" class="link" rel="noreferrer" target="_blank" aria-label="Facebook" lang="en"><svg aria-hidden="true"  class="icon"><use xlink:href="/image/sprite.svg#facebook"></use></svg></a></li>
+                                <%} if( data.telega ) {%>
+                                    <li class="social__icon"><a href="<%= data.telega %>" class="link" rel="noreferrer" target="_blank" aria-label="Telegram" lang="en"><svg aria-hidden="true"  class="icon"><use xlink:href="/image/sprite.svg#telegram"></use></svg></a></li>
+                                <%} if( data.vk ) {%>
+                                    <li class="social__icon"><a href="<%= data.vk %>" class="link" rel="noreferrer" target="_blank" aria-label="ВКонтакте"><svg aria-hidden="true"  class="icon"><use xlink:href="/image/sprite.svg#vk"></use></svg></a></li>
+                                <%}%>
+                            </ul>
+                        </li>
+                    <%}%>
+                </ul>
+
+                <button class="profile__buttonEdit text_colorAccent" data-modal="modalProfileEdit">Редактировать профиль<svg aria-hidden="true" class="profile__iconEdit"><use xlink:href="/image/sprite.svg#edit"></use></svg></button>
+
+                <section>
+                    <hr><h2 class="profile__sectionHeading text_colorAccent">Вакансии</h2>
+                    <% if (!count.length) {%>
+                        <p class="text_colorRed">Не указаны</p>
+                    <%} else {%>
+                        <ul class="profile__list">
+                            <% for (let category of count) {%>
+                                <li class="profile__listItem_identSmall"><%= category.name %>: <%= category.count %> человек(а)</li>
+                            <%}%>
+                        </ul>
+                    <%}%>
+                    <button class="profile__buttonEdit text_colorAccent" data-modal="modalDirectionEdit">Указать вакансии<svg aria-hidden="true" class="profile__iconEdit"><use xlink:href="/image/sprite.svg#edit"></use></svg></button>
+                </section>
+
+                <div class="overlay" data-close=""></div>
+
+                <div id="modalProfileEdit" class="modal">
+                    <button class="modal__close" data-close="" aria-label="Закрыть" title="Закрыть"></button>
+                    <% if (userType === 'comp') {%>
+                        <form id="profilePhoto" method="post" action="/upload/company" enctype="multipart/form-data">
+                            <div class="compProfileEdit__photo">
+                                <img src="<%= data.logo ? `/image/companies/${data.compID}.jpg` : '/image/companies/userDefault.png'%>" alt="Фото профиля" class="profileEdit__photo profile__photo profile__photo_sizeL">
+                                <label for="editPhoto" class="button_loader" tabindex="0" aria-label="Загрузить фото профиля">Загрузить</label>
+                                <input type="file" id="editPhoto" name="avatar" accept="image/png,image/jpeg" class="hidden">
+                            </div>
+                        </form>
+                        <script>
+                            document.getElementById('editPhoto').onchange = () => {document.getElementById('profilePhoto').submit()}
+                        </script>
+                    <%} else if(userType === 'org') {%>
+                        <div class="compProfileEdit__photo">
+                            <img src="<%= data.logo ? `/image/companies/${data.compID}.jpg` : '/image/companies/userDefault.png'%>" alt="Фото профиля" class="profileEdit__photo profile__photo profile__photo_sizeL">
+                        </div>
+                    <%}%>
+
+                    <form action="/edit<%= userType === 'org' ? '?comp='+data.compID : ''%>" method="POST" class="profileEdit">
+                        <section>
+                            <h2 class="profile__sectionHeading text_colorAccent">Описание</h2>
+                            <textarea placeholder="Напишите о себе..." name="information" cols="30" rows="6" maxlength="280"><%= data.information %></textarea>
+                        </section>
+
+                        <section>
+                            <h2 class="profile__sectionHeading text_colorAccent">Реквизиты</h2>
+                            <ul class="profileEdit__list">
+                                <li>
+                                    <label class="form__label">
+                                        <input type="text" name="shortName" class="form__input" value="<%= data.shortName %>">
+                                        <span class="labelText">Краткое наименование</span>
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="form__label">
+                                        <input type="text" name="name" class="form__input" value="<%= data.name %>">
+                                        <span class="labelText">Полное наименование</span>
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="form__label">
+                                        <input type="text" name="address" class="form__input" value="<%= data.address %>">
+                                        <span class="labelText">Адрес</span>
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="form__label">
+                                        <input type="text" name="inn" class="form__input" value="<%= data.inn %>">
+                                        <span class="labelText">ИНН</span>
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="form__label">
+                                        <input type="email" name="email" class="form__input" value="<%= data.email %>">
+                                        <span class="labelText">Адрес электронной почты</span>
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="form__label">
+                                        <input type="text" name="site" class="form__input" value="<%= data.site %>">
+                                        <span class="labelText">Сайт</span>
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="form__label">
+                                        <span class="phonePrefix">+7</span>
+                                        <input type="tel" name="phone" class="form__input" value="<%= data.phone %>">
+                                        <span class="labelText">Телефон</span>
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="form__label">
+                                        <input type="text" name="kpp" class="form__input" value="<%= data.kpp %>">
+                                        <span class="labelText">КПП</span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </section>
+
+                        <section class="compProfileEdit__director">
+                            <h2 class="profile__sectionHeading text_colorAccent">Руководитель компании</h2>
+                            <ul class="profile__list">
+                                <li class="profile__listItem">
+                                    <label class="form__label">
+                                        <input type="text" name="ownerFIO" class="form__input" value="<%= data.ownerFIO %>">
+                                        <span class="labelText">ФИО</span>
+                                    </label>
+                                </li>
+                                <li class="profile__listItem">
+                                    <label class="form__label">
+                                        <input type="text" name="appointment" class="form__input" value="<%= data.appointment %>">
+                                        <span class="labelText">Должность</span>
+                                    </label>
+                                </li>
+                                <li class="profile__listItem">
+                                    <label class="form__label">
+                                        <input type="text" name="command" class="form__input" value="<%= data.command %>">
+                                        <span class="labelText">Действует на основании</span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </section>
+
+                        <section>
+                            <h2 class="profile__sectionHeading text_colorAccent">Социальные сети</h2>
+                            <ul class="profileEdit__list">
+                                <li>
+                                    <label class="form__label">
+                                        <input type="text" name="inst" class="form__input" value="<%= data.inst %>">
+                                        <span class="labelText" lang="en">Instagram</span>
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="form__label">
+                                        <input type="text" name="fb" class="form__input" value="<%= data.fb %>">
+                                        <span class="labelText" lang="en">Facebook</span>
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="form__label">
+                                        <input type="text" name="telega" class="form__input" value="<%= data.telega %>">
+                                        <span class="labelText" lang="en">Telegram</span>
+                                    </label>
+                                </li>
+                                <li>
+                                    <label class="form__label">
+                                        <input type="text" name="vk" class="form__input" value="<%= data.vk %>">
+                                        <span class="labelText">ВКонтакте</span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </section>
+                        <button class="button_sizeM button_colorAccent">Сохранить</button>
+                    </form>
+                </div>
+
+                <div id="modalDirectionEdit" class="modal">
+                    <button class="modal__close" data-close="" aria-label="Закрыть" title="Закрыть"></button>
+
+                    <form action="/editcategory<%= userType === 'org' ? '?comp='+data.compID : ''%>" method="POST" class="profileEdit">
+                        <h2 class="profile__sectionHeading text_colorAccent">Вакансии и количество человек на вакансию</h2>
+
+                        <ul class="profileEdit__list">
+                            <% for(let category of allCategory) {%>
+                            <% let ca = count.find(el => el.catID === category.catID); %>
+                            <li class="profileEdit__directionListItem">
+                                <input <%- ca ? 'checked' : '' %> type="checkbox" name="directionCheckbox" id="<%= category.catID %>" class="hidden" />
+                                <label for="<%= category.catID %>" class="form__checkbox"><%= category.name %></label>
+                                <input type="text" class="profile__directionEditInput text_positionCenter" name="<%= category.catID %>" <%- ca ? `value="${ca.count}"` : '' %>/>
+                            </li>
+                            <%}%>
+                        </ul>
+
+                        <script>
+                            document.getElementsByName('directionCheckbox').forEach( el => {
+                               el.addEventListener('change', (e) => {
+	                               e.target.parentNode.lastElementChild.value = e.target.checked ? 1 : '';
+                               });
+                            });
+                        </script>
+                        <button class="button_sizeM button_colorAccent">Сохранить</button>
+                    </form>
+                </div>
+            <%}
+        }%>
+        </div>
+
+        <ul class="tabsContent__item profileMarks">
+            <% if (userType === 'stud' && request) {%>
+                <li>
+                    <article class="card">
+                        <h2 class="evaluationForm__headline text_positionCenter text_weightNormal">Написать отзыв о компании</h2>
+                        <header class="verticalCard__header">
+                            <div class="verticalCard__name">
+                                <img src="<%= user.logo ? `/image/students/${user.auth.studID}.jpg` : '/image/students/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                                <h2><%= user.name %></h2>
+                            </div>
+                            <fieldset id="rating" class="inputRating__group">
+                                <input class="inputRating__checkbox" type="radio" name="rating" id="health-1" value="1" checked>
+                                <label class="inputRating__star"  for="health-1" aria-label="Ужасно"></label>
+                                <input class="inputRating__checkbox" type="radio" name="rating" id="health-2" value="2">
+                                <label class="inputRating__star"  for="health-2" aria-label="Сносно"></label>
+                                <input class="inputRating__checkbox" type="radio" name="rating" id="health-3" value="3">
+                                <label class="inputRating__star"  for="health-3" aria-label="Нормально"></label>
+                                <input class="inputRating__checkbox" type="radio" name="rating" id="health-4" value="4">
+                                <label class="inputRating__star"  for="health-4" aria-label="Хорошо"></label>
+                                <input class="inputRating__checkbox" type="radio" name="rating" id="health-5" value="5">
+                                <label class="inputRating__star"  for="health-5" aria-label="Отлично"></label>
+                            </fieldset>
+                        </header>
+                        <textarea class="evaluationForm__textarea" placeholder="Отзыв о компании..." id="information" rows="5" maxlength="280"></textarea>
+                        <footer>
+                            <% let date = new Date(); %>
+                            <p>Дата: <time class="text_colorAccent" datetime="<%= date.getFullYear() + '-' + ('00' + (date.getMonth() + 1)).slice(-2) + '-' + ('00' + date.getDate()).slice(-2) %>"><%= ('00' + date.getDate()).slice(-2) + '.' + ('00' + (date.getMonth() + 1)).slice(-2) + '.' + date.getFullYear() %></time></p>
+                            <div class="card__buttonGroup">
+                                <button id="button_request" class="button button_sizeS button_colorAccent"><%= marks.filter(el => el.studID === user.auth.studID).length ? 'Изменить' : 'Отправить' %></button>
+                            </div>
+                        </footer>
+                    </article>
+                </li>
+                <script>
+                    document.getElementById('button_request').onclick = () => {
+
+                        socket.emit('addComment',
+                            location.pathname.slice(location.pathname.lastIndexOf('/')+1),
+                            document.getElementById('rating').querySelector('input:checked').value,
+                            document.getElementById('information').value
+                        );
+                    };
+
+                    socket.on('sendAnswer', () => location.reload());
+                </script>
+            <% } %>
+            <% for (let mark of marks) {%>
+            <li>
+                <article class="card">
+                    <header class="verticalCard__header">
+                        <div class="verticalCard__name">
+                            <a href="/student/<%= mark.studID %>"><img src="<%= mark.logo ? `/image/students/${mark.studID}.jpg` : '/image/students/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM"></a>
+                            <h2><a href="/student/<%= mark.studID %>"><%= mark.fio %></a></h2>
+                        </div>
+                        <div class="outputRating">
+                            <% for(let i = 0; i < 5; i++) {
+                            if(i < mark.mark) { %>
+                                <div class="outputRating__star outputRating__star_active"></div>
+                            <%} else { %>
+                                <div class="outputRating__star"></div>
+                            <%}
+                            }%>
+                            <p class="outputRating__mark"><%= mark.mark %></p>
+                        </div>
+                    </header>
+                    <p class="verticalCard__content"><%= mark.text %></p>
+                    <footer>
+                        <p>Дата: <time class="text_colorAccent" datetime="<%= mark.date.getFullYear() + '-' + ('00' + (mark.date.getMonth() + 1)).slice(-2) + '-' + ('00' + mark.date.getDate()).slice(-2) %>"><%= ('00' + mark.date.getDate()).slice(-2) + '.' + ('00' + (mark.date.getMonth() + 1)).slice(-2) + '.' + mark.date.getFullYear() %></time></p>
+                    </footer>
+                </article>
+            </li>
+            <%}%>
+        </ul>
+    </div>
+</main>
+<%- include('templates/footer') %>
+<script>
+! function(i) {
+var o, n;
+i(".directionSelect__button").on("click", function() {
+o = i(this).parents(".directionSelect"), n = o.find(".directionSelect__list"),
+o.hasClass("directionSelect_active") ? (o.removeClass("directionSelect_active"),
+n.slideUp()) : (o.addClass("directionSelect_active"), n.stop(!0, !0).slideDown(),
+o.siblings(".directionSelect_active").removeClass("directionSelect_active").children(
+".directionSelect__listItem").stop(!0, !0).slideUp())
+})
+}(jQuery);
+</script>
+</body>
+</html>

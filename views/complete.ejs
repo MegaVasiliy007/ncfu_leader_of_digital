@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <%- include('templates/head') %>
+</head>
+<body>
+<%- include('templates/header') %>
+<ul class="breadcrumbs container">
+    <li class="breadcrumbs__item"><a href="/" class="breadcrumbs__itemLink">Главная</a></li>
+    <li class="breadcrumbs__item">Соглашения</li>
+</ul>
+<main class="container">
+    <% if(groups.length) {%>
+    <div class="filter">
+        <div class="filter__group">
+            <button class="filter__groupName text_weightNormal">Группа</button>
+            <ul class="filter__list">
+                <% for (let group in groups){
+                	if (group === 'last') continue;
+                %>
+                    <li>
+                        <input  type="checkbox" name="filterGroup" id="filter-group-<%= group %>" class="visuallyHidden" value="<%= groups[group] %>"/>
+                        <label for="filter-group-<%= group %>" class="form__checkbox"><%= groups[group] %></label>
+                    </li>
+                <%}%>
+            </ul>
+        </div>
+    </div>
+    <%}%>
+
+        <div class="tabsContent__item tabsContent__item_active completeWrapper">
+            <% for (let request of data) {%>
+                <article class="card">
+                    <div class="verticalCard__name">
+                        <img src="<%= request.userLogo ? `/image/students/${request.studID}.jpg` : '/image/students/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                        <ul>
+                            <li class="card__item"><h2 class="text_weightNormal"><a href="/student/<%= request.studID %>"><%= request.fio %></a></h2></li>
+                            <li class="card__item">Группа: <%= request.stGroup %></li>
+                        </ul>
+                    </div>
+                    <hr>
+                    <div class="verticalCard__name">
+                        <img src="<%= request.compLogo ? `/image/companies/${request.compID}.jpg` : '/image/companies/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                        <h2 class="text_weightNormal"><a href="/company/<%= request.compID %>"><%= request.shortName %></a></h2>
+                    </div>
+                </article>
+            <%}%>
+        </div>
+</main>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    let socket = io();
+
+    const sendFilterOptions = () =>{
+        let groups = [];
+
+        for( let optionID of document.querySelectorAll('[name="filterGroup"]:checked'))
+            groups.push(optionID.value);
+
+        socket.emit('sortComplete', groups);
+    }
+
+    for(let option of document.getElementsByName('filterGroup')){
+        option.onchange = sendFilterOptions;
+    }
+
+    const tabsContent = document.querySelectorAll('.tabsContent__item');
+
+    socket.on('sendComplete', (data, practice) => {
+        let html = '';
+
+        for (let request of data) {
+            html += `<article class="card">
+                <div class="verticalCard__name">
+                <a href="/student/${request.studID}"><img src="${request.userLogo ? `/image/students/${request.studID}.jpg` : '/image/students/userDefault.png'}" alt="Фото профиля" class="profile__photo profile__photo_sizeM"></a>
+                <ul>
+                <li class="card__item"><h2 class="text_weightNormal"><a href="/student/${request.studID}">${request.fio}</a></h2></li>
+                <li class="card__item">Группа: ${request.stGroup}</li>
+                </ul>
+                </div>
+                <hr>
+                <div class="verticalCard__name">
+                    <a href="/company/${request.compID}"><img src="${request.compLogo ? `/image/companies/${request.compID}.jpg` : '/image/companies/userDefault.png'}" alt="Фото профиля" class="profile__photo profile__photo_sizeM"></a>
+                    <h2 class="text_weightNormal"><a href="/company/${request.compID}">${request.shortName}</a></h2>
+                </div>
+            </article>`
+        }
+
+        tabsContent[0].innerHTML = html;
+    });
+
+    //
+    document.getElementsByName('button_request').forEach(el => el.onclick = function(e) {
+        socket.emit('submitRequest', e.currentTarget.dataset.status === 'true', e.currentTarget.dataset.studid, e.currentTarget.dataset.compid, e.currentTarget.dataset.who,  e.currentTarget.dataset.catid);
+    });
+
+    socket.on('sendAnswer', () => location.reload());
+</script>
+<%- include('templates/footer') %>
+</body>
+</html>

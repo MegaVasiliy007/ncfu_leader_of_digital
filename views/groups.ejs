@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<%- include('templates/head') %>
+</head>
+<body>
+<%- include('templates/header') %>
+<ul class="breadcrumbs container">
+    <li class="breadcrumbs__item"><a href="/" class="breadcrumbs__itemLink">Главная</a></li>
+    <li class="breadcrumbs__item">Группы</li>
+</ul>
+<main class="container">
+    <ul class="groupsWrapper">
+        <% for (let group of data) {%>
+        <li>
+            <a href="/students?group=<%= group.stGroup %>" class="groups__link" target="_blank" rel="noreferrer">
+                <article class="card">
+                    <ul>
+                        <li class="card__item"><span class="text_colorAccent">Кафедра: </span><%= group.name %></li>
+                        <li class="card__item"><span class="text_colorAccent">Форма обучения: </span><%= group.formLearn %></li>
+                        <li class="card__item"><span class="text_colorAccent">Уровень подготовки: </span><%= group.levelLearn %></li>
+                        <li class="card__item"><span class="text_colorAccent">Группа: </span><%= group.stGroup %></li>
+                    </ul>
+                </article>
+            </a>
+        </li>
+        <%}%>
+    </ul>
+</main>
+<%- include('templates/footer') %>
+</body>
+</html>

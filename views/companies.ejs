@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<%- include('templates/head') %>
+</head>
+<body>
+<%- include('templates/header') %>
+<ul class="breadcrumbs container">
+    <li class="breadcrumbs__item"><a href="/" class="breadcrumbs__itemLink">Главная</a></li>
+    <% if (userType === 'org') {%>
+    <li class="breadcrumbs__item">Организации</li>
+    <%} else{%>
+    <li class="breadcrumbs__item">Вакансии</li>
+    <%}%>
+</ul>
+<main class="container">
+    <% if (userType === 'stud') {%>
+    <ul class="tabs">
+        <li class="tabs__item"><label class="tab tab_active" for="profile" data-tab="0"><input id="profile" class="hidden" name="tabGroup" type="radio" checked>Доступные</label></li>
+        <li class="tabs__item"><label class="tab" for="marks" tabindex="0" data-tab="1"><input id="marks"   class="hidden" name="tabGroup" type="radio">Все</label></li>
+    </ul>
+    <%}%>
+
+    <div class="tabsContent">
+        <% if (userType === 'stud') {%>
+        <div  class="tabsContent__item tabsContent__item_active">
+            <% if(sortData.length) {%>
+            <div class="filter">
+                <div class="filter__group">
+                    <button class="filter__groupName text_weightNormal">Вакансии</button>
+                    <ul class="filter__list">
+                        <% for (let filterOption of sortData) {%>
+                            <li>
+                                <input type="checkbox" name="filterOption" id="<%= filterOption.catID %>" class="visuallyHidden" value="<%= filterOption.catID %>"/>
+                                <label for="<%= filterOption.catID %>" class="form__checkbox"><%= filterOption.name %></label>
+                            </li>
+                        <%}%>
+                    </ul>
+                </div>
+            </div>
+            <%}%>
+
+            <ul id="companies" class="vacancyWrapper">
+                <% for (let company of data) {%>
+                <li>
+                    <article class="card">
+                        <div class="verticalCard__name">
+                            <img src="<%= company.logo ? `/image/companies/${company.compID}.jpg` : '/image/companies/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                            <h2 class="text_weightNormal"><a href="/company/<%= company.compID %>" class="card__link"><%= company.shortName %></a></h2>
+                        </div>
+                        <p class="verticalCard__content"><%= company.information %></p>
+                        <p class="card__directions">Вакансия(и): 
+                            <% for(let category of cat.filter(el => el.compID === company.compID)) {%>
+                                <span class="card__directionsItem text_colorAccent"><%= names[company.compID].find(el => el.catID === category.catID).name %></span>
+                            <%}%>
+                        </p>
+                    </article>
+                </li>
+                <%}%>
+            </ul>
+        </div>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            let socket = io();
+
+            for(let option of document.getElementsByName('filterOption')){
+                option.onchange = () => {
+                    let sendOptions = [];
+                    for( let optionID of document.querySelectorAll('[name="filterOption"]:checked')){
+                        sendOptions.push(optionID.id);
+                    }
+                    socket.emit('getCompanies', sendOptions);
+                }
+            }
+
+            socket.on('sendCompanies', (data, names, cat) => {
+            	let temp = '';
+            	for (let company of data) {
+                    temp += `<li>
+                    <article class="card">
+                        <div class="verticalCard__name">
+                            <img src="${ company.logo ? `/image/companies/${company.compID}.jpg` : '/image/companies/userDefault.png'  }" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                            <h2 class="text_weightNormal"><a href="/company/${ company.compID }" class="card__link">${ company.shortName }</a></h2>
+                        </div>
+                        <p class="verticalCard__content">${ company.information }</p>
+                        <p class="card__directions">Вакансия(и): `
+			            for(let category of cat.filter(el => el.compID === company.compID)) {
+                             temp += `<span class="card__directionsItem text_colorAccent">${ names[company.compID].find(el => el.catID === category.catID).name }</span>`
+                         }
+                temp +=`</p>
+                    </article>
+                </li>`;
+                }
+	            document.getElementById('companies').innerHTML = temp;
+            });
+        </script>
+        <%}%>
+
+        <div class="tabsContent__item <%= userType !== 'stud' ? 'tabsContent__item_active' : ''%>">
+            <ul class="vacancyWrapper">
+                <% if(userType === 'org') {%>
+                <li>
+                    <div class="card">
+                        <h2 class="createAccountForm__headline text_positionCenter">Создать аккаунт</h2>
+                        <label class="form__label">
+                            <input type="text" id="createLogin" class="form__input">
+                            <span class="labelText">Логин</span>
+                        </label>
+                        <label class="form__label">
+                            <input type="email" id="createMail" class="form__input">
+                            <span class="labelText">E-mail</span>
+                        </label>
+                        <button id="createAccount" class="authForm__button button button_sizeL button_colorAccent">Создать</button>
+                    </div>
+                </li>
+                <script src="/socket.io/socket.io.js"></script>
+                <script>
+                    let socket = io();
+
+                    document.getElementById('createAccount').onclick = () => {
+                        socket.emit('addCompany',
+                            document.getElementById('createLogin').value,
+                            document.getElementById('createMail').value
+                        );
+                    }
+
+                    socket.on('sendAnswer', () => location.reload());
+                </script>
+                <%}%>
+                <% for (let company of allData) {%>
+                    <li>
+                        <article class="card">
+                            <div class="verticalCard__name">
+                                <img src="<%= company.logo ? `/image/companies/${company.compID}.jpg` : '/image/companies/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                                <h2 class="text_weightNormal"><a href="/company/<%= company.compID %>" class="card__link"><%= company.shortName ? company.shortName : company.login + ' (нет имени)' %></a></h2>
+                            </div>
+                            <% if (company.information) {%>
+                            <p class="verticalCard__content"><%= company.information %></p>
+                            <%}%>
+                            <% if (names[company.compID]) {%>
+                                <p class="card__directions">Вакансия(и): 
+                                    <% if (userType === 'stud') {%>
+                                        <% for(let category of cat.filter(el => el.compID === company.compID)) {%>
+                                            <span class="card__directionsItem text_colorAccent"><%= names[company.compID].find(el => el.catID === category.catID).name %></span>
+                                        <%}%>
+                                    <%}%>
+                                    <% if (userType === 'org') {%>
+                                        <% for(let name of names[company.compID]) {%>
+                                            <span class="card__directionsItem text_colorAccent"><%= name.name %></span>
+                                        <%}%>
+                                    <%}%>
+                                </p>
+                            <%}%>
+                        </article>
+                    </li>
+                <%}%>
+            </ul>
+        </div>
+    </div>
+</main>
+<%- include('templates/footer') %>
+</body>
+</html>

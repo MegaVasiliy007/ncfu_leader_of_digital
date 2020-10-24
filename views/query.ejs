@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<%- include('templates/head') %>
+</head>
+<body>
+<%- include('templates/header') %>
+<% if(userType == 'comp') {%>
+    <ul class="breadcrumbs container">
+        <li class="breadcrumbs__item"><a href="/" class="breadcrumbs__itemLink">Главная</a></li>
+        <li class="breadcrumbs__item">Заявки</li>
+    </ul>
+    <main class="container">
+        <ul class="tabs">
+            <li class="tabs__item"><label class="tab tab_active" for="profile" data-tab="0"><input id="profile" class="hidden" name="tabGroup" type="radio" checked>Новые</label></li>
+            <li class="tabs__item"><label class="tab" for="marks" tabindex="0" data-tab="1"><input id="marks"   class="hidden" name="tabGroup" type="radio">Принятые</label></li>
+            <li class="tabs__item"><label class="tab" for="marks" tabindex="0" data-tab="2"><input id="marks"   class="hidden" name="tabGroup" type="radio">Отклоненные</label></li>
+        </ul>
+        <div class="tabsContent">
+            <ul class="queryWrapper tabsContent__item tabsContent__item_active">
+            <% for (let query of data.filter(el => el.statID == 1)) {%>
+                <li>
+                    <article class="card horizontalCard">
+                        <a href="/student/<%= query.studID %>"><img src="<%= query.logo ? `/image/students/${query.studID}.jpg` : '/image/students/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM"></a>
+                        <div class="horizontalCard__content">
+                            <h2><a href="/student/<%= query.studID %>" class="text_weightNormal"><%= query.fio %></a></h2>
+                            <ul class="horizontalCard__direction directionList">
+                                <li class="directionList__item">Вакансия:</li>
+                                <li class="directionList__item text_colorAccent"><%= query.name %></li>
+                            </ul>
+                            <ul class="cardDescriptionList">
+                                <li class="cardDescriptionList__item">Уровень подготовки:<%= query.levelLearn %></li>
+                                <li class="cardDescriptionList__item">Курс: <%= query.course %></li>
+                            </ul>
+                            <div class="card__buttonGroup">
+                                <button name="button_request" data-status="true" data-idenid="<%= query.studID %>" data-catid="<%= query.catID %>" class="button button_sizeS button_colorAccent">Принять</button>
+                                <button name="button_request" data-status="false" data-idenid="<%= query.studID %>" data-catid="<%= query.catID %>" class="button button_sizeS button_colorGray">Отклонить</button>
+                            </div>
+                        </div>
+                    </article>
+                </li>
+            <%}%>
+            </ul>
+
+            <ul class="queryWrapper tabsContent__item tabsContent__item">
+            <% for (let query of data.filter(el => el.statID == 3 || el.statID == 4)) {%>
+                <li>
+                    <article class="card horizontalCard">
+                        <a href="/student/<%= query.studID %>"><img src="<%= query.logo ? `/image/students/${query.studID}.jpg` : '/image/students/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM"></a>
+                        <div class="horizontalCard__content">
+                            <h2><a href="/student/<%= query.studID %>" class="text_weightNormal"><%= query.fio %></a></h2>
+                            <ul class="horizontalCard__direction directionList">
+                                <li class="directionList__item">Вакансия:</li>
+                                <li class="directionList__item text_colorAccent"><%= query.name %></li>
+                            </ul>
+                            <ul class="cardDescriptionList">
+                                <li class="cardDescriptionList__item">Уровень подготовки:<%= query.levelLearn %></li>
+                                <li class="cardDescriptionList__item">Курс: <%= query.course %></li>
+                            </ul>
+                            <%if(query.statID == 3 || query.statID == 4 ) {%>
+                            <span class="card__requestStatus text_weightMedium text_colorAccent cursor_pointer" aria-role="button">Принято</span>
+                            <%}%>
+                        </div>
+                    </article>
+                </li>
+            <%}%>
+            </ul>
+
+            <ul class="queryWrapper tabsContent__item tabsContent__item">
+            <% for (let query of data.filter(el => el.statID == 2)) {%>
+                <li>
+                    <article class="card horizontalCard">
+                        <a href="/student/<%= query.studID %>"><img src="<%= query.logo ? `/image/students/${query.studID}.jpg` : '/image/students/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM"></a>
+                        <div class="horizontalCard__content">
+                            <h2><a href="/student/<%= query.studID %>" class="text_weightNormal"><%= query.fio %></a></h2>
+                            <ul class="horizontalCard__direction directionList">
+                                <li class="directionList__item">Вакансия:</li>
+                                <li class="directionList__item text_colorAccent"><%= query.name %></li>
+                            </ul>
+                            <ul class="cardDescriptionList">
+                                <li class="cardDescriptionList__item">Уровень подготовки:<%= query.levelLearn %></li>
+                                <li class="cardDescriptionList__item">Курс: <%= query.course %></li>
+                            </ul>
+                            <span class="card__requestStatus text_weightMedium text_colorRed">Отклонено</span>
+                        </div>
+                    </article>
+                </li>
+            <%}%>
+            </ul>
+        </div>
+    </main>
+
+    <div class="overlay" data-close=""></div>
+    <script>
+        document.getElementsByName('button_request').forEach(el => el.onclick = function(e) {
+
+            socket.emit('changeRequest', e.currentTarget.dataset.status === 'true', e.currentTarget.dataset.idenid, e.currentTarget.dataset.catid);
+        });
+
+        socket.on('sendAnswer', () => location.reload());
+    </script>
+
+<%} else if(userType == 'stud') {%>
+    <ul class="breadcrumbs container">
+        <li class="breadcrumbs__item"><a href="/" class="breadcrumbs__itemLink">Главная</a></li>
+        <li class="breadcrumbs__item">Заявки</li>
+    </ul>
+    <main class="container">
+        <% if(sortData.length) {%>
+        <div class="filter">
+            <div class="filter__group">
+                <button class="filter__groupName text_weightNormal">Вакансии</button>
+                <ul class="filter__list">
+                    <% for (let filterOption of sortData) {%>
+                        <li>
+                            <input type="checkbox" name="filterOption" id="<%= filterOption.catID %>" class="visuallyHidden" value="<%= filterOption.catID %>"/>
+                            <label for="<%= filterOption.catID %>" class="form__checkbox"><%= filterOption.name %></label>
+                        </li>
+                    <%}%>
+                </ul>
+            </div>
+        </div>
+        <%}%>
+
+        <ul class="tabs">
+            <li class="tabs__item"><label class="tab tab_active" data-tab="0"><input   id="" class="sr-only" name="tabGroup" type="radio" checked>Новые</label></li>
+            <li class="tabs__item"><label class="tab" tabindex="0" data-tab="1"><input id="" class="sr-only" name="tabGroup" type="radio">Принятые</label></li>
+            <li class="tabs__item"><label class="tab" tabindex="0" data-tab="2"><input id="" class="sr-only" name="tabGroup" type="radio">Отклоненные</label></li>
+        </ul>
+
+        <ul class="tabsContent">
+            <li class="tabsContent__item tabsContent__item_active">
+                <ul class="studQueryWrapper">
+                <% for (let query of data.filter(el => el.statID == 1) ) {%>
+                    <li>
+                        <article class="card">
+                            <header class="verticalCard__header">
+                                <div class="verticalCard__name">
+                                    <a href="/company/<%= query.compID %>"><img src="<%= query.logo ? `/image/companies/${query.compID}.jpg` : '/image/companies/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM"></a>
+                                    <h2><a href="/company/<%= query.compID %>" class="text_weightNormal"><%= query.shortName %></a></h2>
+                                </div>
+                            </header>
+                            <p class="verticalCard__content"><%= query.information %></p>
+                            <footer>
+                                <p>Вакансия: <span class="text_colorAccent"><%= query.name %></span></p>
+                                <div class="card__buttonGroup">
+                                    <button name="button_request" data-status="true" data-idenid="<%= query.compID %>" data-catid="<%= query.catID %>" class="button button_sizeS button_colorAccent">Принять</button>
+                                    <button name="button_request" data-status="false" data-idenid="<%= query.compID %>" data-catid="<%= query.catID %>" class="button button_sizeS button_colorGray">Отклонить</button>
+                                </div>
+                            </footer>
+                        </article>
+                    </li>
+                <%}%>
+                </ul>
+            </li>
+            <li class="tabsContent__item">
+                <ul class="studQueryWrapper studQueryWrapper_request">
+                    <% for (let query of data.filter(el => el.statID != 1 && el.statID != 2)) {%>
+                        <li>
+                            <article class="card">
+                                <header class="verticalCard__header">
+                                    <div class="verticalCard__name">
+                                        <img src="<%= query.logo ? `/image/companies/${query.compID}.jpg` : '/image/companies/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                                        <h2><a href="/company/<%= query.compID %>" class="card__link text_weightNormal"><%= query.shortName %></a></h2>
+                                    </div>
+                                </header>
+                                <p class="verticalCard__content"><%= query.information %></p>
+                                <footer class="verticalCard__statusWrapper">
+                                    <p>Вакансия: <span class="text_colorAccent"><%= query.name %></span></p>
+                                    <span class="card__requestStatus text_weightMedium text_colorGreen" aria-label="Статус заявки">Принято</span>
+                                </footer>
+                            </article>
+                        </li>
+                    <%}%>
+                </ul>
+            </li>
+            <li class="tabsContent__item">
+                <ul class="studQueryWrapper studQueryWrapper_request">
+                    <% for (let query of data.filter(el => el.statID == 2)) {%>
+                        <li>
+                            <article class="card">
+                                <header class="verticalCard__header">
+                                    <div class="verticalCard__name">
+                                        <img src="<%= query.logo ? `/image/companies/${query.compID}.jpg` : '/image/companies/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                                        <h2><a href="/company/<%= query.compID %>" class="card__link text_weightNormal"><%= query.shortName %></a></h2>
+                                    </div>
+                                </header>
+                                <p class="verticalCard__content"><%= query.information %></p>
+                                <footer>
+                                    <ul class="directionList">
+                                        <li class="directionList__item">Вакансия: <span class="text_colorAccent"><%= query.name %></span></li>
+                                        <li class="card__requestStatus text_weightMedium text_colorRed" aria-label="Статус заявки">Отклонено</li>
+                                    </ul>
+                                </footer>
+                            </article>
+                        </li>
+                    <%}%>
+                </ul>
+            </li>
+        </ul>
+
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = io();
+
+        for(let option of document.getElementsByName('filterOption')){
+            option.onchange = () => {
+                let sendOptions = [];
+                for( let optionID of document.querySelectorAll('[name="filterOption"]:checked')){
+                    sendOptions.push(optionID.id);
+                }
+                socket.emit('sortQueue', sendOptions);
+            }
+        }
+
+        socket.on('sendQueue', (data, names) => {
+            let temp;
+            const tabsItem = document.querySelectorAll('.studQueryWrapper');
+
+            tabsItem.forEach(el => el.innerHTML = '');
+
+            for (let query of data) {
+                temp = `
+                    <li>
+                        <article class="card">
+                            <header class="verticalCard__header">
+                                <div class="verticalCard__name">
+                                    <img src="${ query.logo ? `/image/companies/${query.compID}.jpg` : '/image/companies/userDefault.png' }" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                                    <h2><a href="/company/${ query.compID }" class="card__link text_weightNormal">${ query.shortName }</a></h2>
+                                </div>
+                            </header>
+                            <p class="verticalCard__content">${ query.information }</p>`
+                                if (query.statID == 1) {
+                                temp += `
+                                <footer>
+                                    <p>Вакансия: <span class="text_colorAccent">${query.name}</span></p>
+                                    <div class="card__buttonGroup">
+                                        <button name="button_request" data-status="true" data-idenid="${query.compID}" data-catid="${query.catID}" class="button button_sizeS button_colorAccent">Принять</button>
+                                        <button name="button_request" data-status="false" data-idenid="${query.compID}" data-catid="${query.catID}" class="button button_sizeS button_colorGray">Отклонить</button>
+                                    </div>
+                                </footer>`
+                                } else if (query.statID == 2){
+                                temp += `
+                                <footer>
+                                    <ul class="directionList">
+                                        <li class="directionList__item">Вакансия: <span class="text_colorAccent">${query.name}</span></li>
+                                        <li class="card__requestStatus text_weightMedium text_colorRed" aria-label="Статус заявки">Отклонено</li>
+                                    </ul>
+                                </footer>`
+                                } else{
+                                temp += `
+                                <footer class="verticalCard__statusWrapper">
+                                    <p>Вакансия: <span class="text_colorAccent">${query.name}</span></p>
+                                    <span class="card__requestStatus text_weightMedium text_colorGreen" aria-label="Статус заявки">Принято</span>
+                                </footer>`
+                                }
+                        temp += `
+                    </article>
+                </li>`;
+
+                if (query.statID == 1) {
+                    tabsItem[0].innerHTML += temp;
+                } else if(query.statID == 2){
+                    tabsItem[2].innerHTML += temp;
+                } else{
+                    tabsItem[1].innerHTML += temp;
+                }
+            }
+        });
+
+        document.getElementsByName('button_request').forEach(el => el.onclick = function(e) {
+            socket.emit('changeRequest', e.currentTarget.dataset.status === 'true', e.currentTarget.dataset.idenid, e.currentTarget.dataset.catid);
+        });
+
+        socket.on('sendAnswer', () => location.reload());
+    </script>
+<%}%>
+<%- include('templates/footer') %>
+</body>
+</html>

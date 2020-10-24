@@ -1,0 +1,60 @@
+<%var profileIcon = profileIcon || 0,
+      homePage    = homePage || 0%>
+<header class="header">
+    <% if(homePage) {%>
+        <p class="header__logo text_colorAccent">Заходи и работай<span class="text_weightMedium">СКФУ</span></p>
+    <%} else{%>
+        <a href="/" class="header__logo text_colorAccent" aria-label="На главную" title="На главную">Заходи и работай<span class="text_weightMedium">СКФУ</span></a>
+    <%}%>
+
+    <% if (userType != 'none') {%>
+    <nav>
+        <ul class="navList">
+            <% if (userType == 'stud') {%>
+                <li class="tabs__item"><a href="/companies" class="linkTab tab">Вакансии</a></li>
+                <li class="tabs__item"><a href="/queue" class="linkTab tab">Предложения</a></li>
+                <li class="tabs__item"><a href="/request" class="linkTab tab">Отправленные заявки</a></li>
+            <%} else if (userType == 'comp') {%>
+                <li class="tabs__item"><a href="/students" class="linkTab tab">Студенты</a></li>
+                <li class="tabs__item"><a href="/queue" class="linkTab tab">Заявки</a></li>
+                <li class="tabs__item"><a href="/request" class="linkTab tab">Предложения</a></li>
+            <%} else if (userType == 'org') {%>
+                <li class="tabs__item"><a href="/companies" class="linkTab tab">Организации</a></li>
+                <li class="tabs__item"><a href="/groups" class="linkTab tab">Группы</a></li>
+                <li class="tabs__item"><a href="/complete" class="linkTab tab">Соглашения</a></li>
+                <li class="tabs__item"><a href="#" class="tab">Статистика</a></li>
+            <%}%>
+        </ul>
+    </nav>
+    <%}%>
+
+    <div class="header__controlMenu">
+        <% if (userType == 'none') {%>
+            <a href="/login" class="iconLink link" title="Вход в аккаунт" aria-label="Вход в аккаунт"><svg class="icon <%= profileIcon ? 'icon_active' : '' %>" aria-hidden="true"><use xlink:href="/image/sprite.svg#login"></use></svg></a>
+        <%} else { if (userType == 'stud') {%>
+                <a href="/student/<%= user.auth.studID %>" class="iconLink link" title="Профиль" aria-label="Профиль"><svg class="icon <%= profileIcon ? 'icon_active' : '' %>" aria-hidden="true"><use xlink:href="/image/sprite.svg#user"></use></svg></a>
+            <%} else if (userType == 'comp') {%>
+                <a href="/company/<%= user.auth.compID %>" class="iconLink link" title="Профиль" aria-label="Профиль"><svg class="icon <%= profileIcon ? 'icon_active' : '' %>" aria-hidden="true"><use xlink:href="/image/sprite.svg#user"></use></svg></a>
+            <%} else if (userType == 'org') {%>
+                <a href="/settings" class="iconLink link"  title="Настройки" aria-label="Настройки"><svg class="icon <%= profileIcon ? 'icon_active' : '' %>" aria-hidden="true"><use xlink:href="/image/sprite.svg#gear"></use></svg></a>
+            <%}%>
+
+            <a href="/logout" class="iconLink link" title="Выход из аккаунта" aria-label="Выход"><svg class="icon" aria-hidden="true"><use xlink:href="/image/sprite.svg#logout"></use></svg></a>
+        <%}%>
+    </div>
+
+    <script>
+        const currentLocaction = location.href,
+              navLinks		   = document.getElementsByClassName('linkTab');
+        if(navLinks){
+            for(let i = 0; i < navLinks.length; i++){
+                if(navLinks[i].href === currentLocaction){
+                    navLinks[i].classList.add('tab_active');
+                    navLinks[i].removeAttribute('href');
+                } else{
+                    navLinks[i].classList.remove('tab_active');
+                }
+            }
+        }
+    </script>
+</header>

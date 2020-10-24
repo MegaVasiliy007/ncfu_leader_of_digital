@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<%- include('templates/head') %>
+</head>
+<body>
+<%- include('templates/header') %>
+<ul class="breadcrumbs container">
+    <li class="breadcrumbs__item"><a href="/" class="breadcrumbs__itemLink">Главная</a></li>
+    <% if(group) {%>
+        <li class="breadcrumbs__item"><a href="/students" class="breadcrumbs__itemLink">Студенты</a></li>
+        <li class="breadcrumbs__item"><%= group %></li>
+    <%} else {%>
+        <li class="breadcrumbs__item">Студенты</li>
+    <%}%>
+</ul>
+<main class="container">
+    <% if (userType === 'comp') {%>
+        <% if(sortData.naprav.length > 1 || sortData.level.length > 1 || sortData.course.length > 1) {%>
+        <div class="filter">
+            <div class="filter__group">
+                <button class="filter__groupName text_weightNormal">Вакансии</button>
+                <ul class="filter__list">
+                    <% for ( let filterOption of sortData.naprav) {%>
+                        <li>
+                            <input  type="checkbox" name="studentDirection" id="direction-<%= filterOption.catID %>" class="visuallyHidden" value="<%= filterOption.catID %>"/>
+                            <label for="direction-<%= filterOption.catID %>" class="form__checkbox"><%= filterOption.name %></label>
+                        </li>
+                    <%}%>
+                </ul>
+            </div>
+
+            <div class="filter__group">
+                <button class="filter__groupName text_weightNormal">Уровень подготовки</button>
+                <ul class="filter__list">
+                    <% for ( let filterOption of sortData.level) {%>
+                        <li>
+                            <input  type="checkbox" name="studentLevel" id="<%= filterOption.levelLearn %>" class="visuallyHidden" value="<%= filterOption.levelLearn %>"/>
+                            <label for="<%= filterOption.levelLearn %>" class="form__checkbox"><%= filterOption.levelLearn %></label>
+                        </li>
+                    <%}%>
+                </ul>
+            </div>
+
+            <div class="filter__group">
+                <button class="filter__groupName text_weightNormal">Курс</button>
+                <ul class="filter__list">
+                    <% for ( let filterOption of sortData.course) {%>
+                        <li>
+                            <input  type="checkbox" name="studentCourse" id="course-<%= filterOption.course %>" class="visuallyHidden" value="<%= filterOption.course %>"/>
+                            <label for="course-<%= filterOption.course %>" class="form__checkbox"><%= filterOption.course %> курс</label>
+                        </li>
+                    <%}%>
+                </ul>
+            </div>
+        </div>
+        <%}%>
+    <%}%>
+
+    <ul id="filterStudents" class="studentsWrapper">
+        <% for (let student of data) {%>
+            <li>
+                <article class="card">
+                    <div class="verticalCard__name">
+                        <img src="<%= student.logo ? `/image/students/${student.studID}.jpg` : '/image/students/userDefault.png' %>" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                        <h2 class="text_weightNormal"><a href="/student/<%= student.studID %>" class="card__link"><%= student.fio %></a></h2>
+                    </div>
+                    <ul class="verticalCard__content">
+                        <li>Уровень подготовки: <%= student.levelLearn %></li>
+                        <li>Курс: <%= student.course %></li>
+                    </ul>
+                    <p>Вакансия: <span class="text_colorAccent"><%= student.name %></span></p>
+                </article>
+            </li>
+        <%}%>
+    </ul>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = io();
+
+        const sendFilterOptions = () =>{
+            let studentDirection = [],
+                studentLevel     = [],
+                studentCourse    = [];
+
+            for( let optionID of document.querySelectorAll('[name="studentDirection"]:checked'))
+                studentDirection.push(optionID.value);
+
+            for( let optionID of document.querySelectorAll('[name="studentLevel"]:checked'))
+                studentLevel.push(optionID.value);
+
+            for( let optionID of document.querySelectorAll('[name="studentCourse"]:checked'))
+                studentCourse.push(optionID.value);
+
+            socket.emit('sortStudents', studentDirection, studentLevel, studentCourse);
+        }
+
+        for(let option of document.getElementsByName('studentDirection')){
+            option.onchange = sendFilterOptions;
+        }
+
+        for(let option of document.getElementsByName('studentLevel')){
+            option.onchange = sendFilterOptions;
+        }
+
+        for(let option of document.getElementsByName('studentCourse')){
+            option.onchange = sendFilterOptions;
+        }
+
+        socket.on('sendStudents', (data) => {
+            let temp = '';
+
+            for (let student of data) {
+                temp += `<li>
+                <article class="card">
+                    <div class="verticalCard__name">
+                        <img src="${ student.logo ? `/image/students/${student.studID}.jpg` : '/image/students/userDefault.png' }" alt="Фото профиля" class="profile__photo profile__photo_sizeM">
+                        <h2 class="text_weightNormal"><a href="/student/${ student.studID }" class="card__link">${ student.fio }</a></h2>
+                    </div>
+                    <ul class="verticalCard__content">
+                        <li>Уровень подготовки: ${ student.levelLearn }</li>
+                        <li>Курс: ${ student.course }</li>
+                    </ul>
+                    <p>Вакансия: <span class="text_colorAccent">${ student.name }</span></p>
+                </article>
+            </li>`;
+            }
+
+            document.getElementById('filterStudents').innerHTML = temp;
+        });
+    </script>
+</main>
+<%- include('templates/footer') %>
+</body>
+</html>

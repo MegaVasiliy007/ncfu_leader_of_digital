@@ -1,0 +1,183 @@
+<%
+
+function declOfNum(number, titles) {
+    let cases = [2, 0, 1, 1, 1, 2];
+    return titles[ (number%100>4 && number%100<20)? 2 : cases[(number%10<5)?number%10:5] ];
+}
+
+ %>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<%- include('templates/head') %>
+</head>
+<body>
+<%- include('templates/header', {homePage: true}) %>
+<main class="homePage">
+    <div class="homePage__practiceBanner container">
+        <img class="practiceBanner__ncfuLogo" src="../image/homePage/ncfu.png" alt="Логотип СКФУ">
+        <div class="practiceBanner__info">
+            <h1 class="practiceBanner__title decor__line">Заходи и работай</h1>
+            <span>Место, где студенты и компании находят лучшее <br> для себя</span>
+        </div>
+        <ul class="practiceBanner__anchors" aria-hidden="true">
+            <li>
+                <a class="anchors__item" href="#aboutUs"><svg class="anchors__icon icon"><use xlink:href="/image/sprite.svg#aboutUs"></use></svg>О системе</a>
+            </li>
+            <% if( marksStud.length > 0 || marksComp.length > 0) {%>
+            <li>
+                <a class="anchors__item" href="#reviews"><svg class="anchors__icon icon"><use xlink:href="/image/sprite.svg#reviews"></use></svg>Отзывы</a>
+            </li>
+            <%}%>
+        </ul>
+    </div>
+    <section class="homePage__achievements container text_colorAccent">
+        <h2 class="homePage__sectionHeadline">Наши достижения</h2>
+        <ul class="achievementsList text_positionCenter text_weightMedium">
+            <li class="achievementsList__item">
+                <strong class="achievementsList__num"><%= counts.request %></strong>
+                <span><%= declOfNum(counts.request, ['Студент трудоустроен', 'Студента трудоустроено', 'Студентов трудоустроено']) %></span>
+            </li>
+            <li class="achievementsList__item">
+                <strong class="achievementsList__num"><%= counts.companies %></strong>
+                <span><%= declOfNum(counts.companies, ['Компания предоставляет', 'Компании предоставляют', 'Компаний предоставляют']) %> вакансии на платформе</span>
+            </li>
+            <li class="achievementsList__item">
+                <strong class="achievementsList__num"><%= counts.marks %></strong>
+                <span><%= declOfNum(counts.marks, ['Отзыв', 'Отзыва', 'Отзывов']) %> от наших участников</span>
+            </li>
+        </ul>
+    </section>
+    <section id="aboutUs" class="homePage__aboutUs container">
+        <h2 class="homePage__sectionHeadline text_colorAccent">О системе</h2>
+        <p>
+            Жизненный успех во многом зависит от того, насколько удачно сделан выбор профессии, сферы самореализации человека.
+            Платформа предназначена для поиска работы в соответствии с направлениями подготовки в Северо-Кавказском федеральном университете.
+            Регистрируйся и найди себя в мире профессий!
+        </p>
+    </section>
+
+    <% if( marksStud.length > 0 || marksComp.length > 0) {%>
+    <div id="reviews" class="homePage__reviewsWrapper container">
+        <% if( marksStud.length > 0 ) {%>
+            <section class="homePage__reviews">
+                <h2 class="homePage__sectionHeadline text_colorAccent">Отзывы компаний</h2>
+                <div class="reviews__carousel">
+                    <div id="companyReviews" class="swiper-container carousel">
+                        <div class="swiper-wrapper">
+                            <% for (let mark of marksStud) {%>
+                                <div class="swiper-slide">
+                                    <article class="carousel__item card">
+                                        <header class="verticalCard__header">
+                                            <div class="verticalCard__name">
+                                                <img src="<%= mark.compLogo ? `/image/companies/${mark.compID}.jpg` : '/image/companies/userDefault.png' %>" class="profile__photo profile__photo_sizeM" alt="" aria-hidden="true">
+                                                <h3><%= mark.name %></h3>
+                                            </div>
+                                            <div class="verticalCard__rating outputRating" aria-label="Оценка <%= mark.mark %>">
+                                                <% for(let i = 0; i < 5; i++) {
+                                                    if(i < mark.mark) { %>
+                                                        <div class="outputRating__star outputRating__star_active"></div>
+                                                    <%} else { %>
+                                                        <div class="outputRating__star"></div>
+                                                    <%}
+                                                }%>
+                                                <p class="outputRating__mark"><%= mark.mark %></p>
+                                            </div>
+                                        </header>
+                                        <p class="verticalCard__content"><%= mark.text %></p>
+                                        <footer>
+                                            <p>Студент: <span class="text_colorAccent"><%= mark.fio %></span></p>
+                                            <p style="margin-top: 4px;"> Дата: <time class="text_colorAccent" datetime="<%= mark.date.getFullYear() + '-' + ('00' + (mark.date.getMonth() + 1)).slice(-2) + '-' + ('00' + mark.date.getDate()).slice(-2) %>"><%= ('00' + mark.date.getDate()).slice(-2) + '.' + ('00' + (mark.date.getMonth() + 1)).slice(-2) + '.' + mark.date.getFullYear() %></time></p>
+                                        </footer>
+                                    </article>
+                                </div>
+                            <%}%>
+                        </div>
+                    </div>
+                    <button id="companyReviews__arrow_prev" class="carousel__arrow carousel__arrow_prev" aria-label="Предыдущий слайд"><svg class="carousel__arrowIcon" aria-hidden="true"><use xlink:href="/image/sprite.svg#arrow"></use></svg></button>
+                    <button id="companyReviews__arrow_next" class="carousel__arrow carousel__arrow_next" aria-label="Следующий слайд"><svg class="carousel__arrowIcon" aria-hidden="true"><use xlink:href="/image/sprite.svg#arrow"></use></svg></button>
+                </div>
+            </section>
+        <%}%>
+        <% if(marksComp.length > 0) {%>
+            <section class="homePage__reviews">
+                <h2 class="homePage__sectionHeadline text_colorAccent">Отзывы студентов</h2>
+                <div class="reviews__carousel">
+                    <div id="studentReviews" class="swiper-container carousel">
+                        <div class="swiper-wrapper">
+                            <% for (let mark of marksComp) {%>
+                                <div class="swiper-slide">
+                                    <article class="carousel__item card">
+                                        <header class="verticalCard__header">
+                                            <div class="verticalCard__name">
+                                                <img src="<%= mark.studLogo ? `/image/students/${mark.studID}.jpg` : '/image/students/userDefault.png' %>" class="profile__photo profile__photo_sizeM" alt="" aria-hidden="true">
+                                                <h3><%= mark.fio %></h3>
+                                            </div>
+                                            <div class="verticalCard__rating outputRating" aria-label="Оценка <%= mark.mark %>">
+                                                <% for(let i = 0; i < 5; i++) {
+                                                    if(i < mark.mark) { %>
+                                                        <div class="outputRating__star outputRating__star_active"></div>
+                                                    <%} else { %>
+                                                        <div class="outputRating__star"></div>
+                                                    <%}
+                                                }%>
+                                                <p class="outputRating__mark"><%= mark.mark %></p>
+                                            </div>
+                                        </header>
+                                        <p class="verticalCard__content"><%= mark.text %></p>
+                                        <footer>
+                                            <p>Компания: <span class="text_colorAccent"><%= mark.name %></span></p>
+                                            <p style="margin-top: 4px;">Дата: <time class="text_colorAccent" datetime="<%= mark.date.getFullYear() + '-' + ('00' + (mark.date.getMonth() + 1)).slice(-2) + '-' + ('00' + mark.date.getDate()).slice(-2) %>"><%= ('00' + mark.date.getDate()).slice(-2) + '.' + ('00' + (mark.date.getMonth() + 1)).slice(-2) + '.' + mark.date.getFullYear() %></time></p>
+                                        </footer>
+                                    </article>
+                                </div>
+                            <%}%>
+                        </div>
+                    </div>
+                    <button id="studentReviews__arrow_prev" class="carousel__arrow carousel__arrow_prev" aria-label="Предыдущий слайд"><svg class="carousel__arrowIcon" aria-hidden="true"><use xlink:href="/image/sprite.svg#arrow"></use></svg></button>
+                    <button id="studentReviews__arrow_next" class="carousel__arrow carousel__arrow_next" aria-label="Следующий слайд"><svg class="carousel__arrowIcon" aria-hidden="true"><use xlink:href="/image/sprite.svg#arrow"></use></svg></button>
+                </div>
+            </section>
+        <%}%>
+    </div>
+    <%}%>
+
+    <section class="homePage__partners">
+        <h2 class="homePage__partnersHeadline homePage__sectionHeadline text_colorAccent">Наши партнеры</h2>
+        <div class="partners__images">
+            <img src="/image/homePage/partners.jpg" alt="Партнеры: Ogetto, Inostudio, Itsoft, Свет миру">
+            <img src="/image/homePage/partners.jpg" alt="" aria-hidden="true">
+            <img src="/image/homePage/partners.jpg" alt="" aria-hidden="true">
+        </div>
+    </section>
+</main>
+<%- include('templates/footer') %>
+</body>
+<script src="/js/swiper/swiper.min.js"></script>
+<script>
+    let companyReviews = new Swiper('#companyReviews', {
+        slidesPerView: 2,
+        spaceBetween: 20,
+        navigation: {
+            nextEl: '#companyReviews__arrow_next',
+            prevEl: '#companyReviews__arrow_prev',
+        }
+    });
+
+    let studentReviews = new Swiper('#studentReviews', {
+        slidesPerView: 2,
+        spaceBetween: 20,
+        navigation: {
+            nextEl: '#studentReviews__arrow_next',
+            prevEl: '#studentReviews__arrow_prev',
+        }
+    });
+
+    $('.anchors__item').on('click', function() {
+        let hash = this.hash,
+            headerHeight = $('header').height() + 20;
+        $('html, body').animate({scrollTop: $(hash).offset().top - headerHeight}, 800);
+        return false;
+    });
+</script>
+</html>

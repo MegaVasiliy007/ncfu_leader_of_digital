@@ -1,0 +1,60 @@
+<%var err = err || 0%>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<%- include('templates/head', {title: 'Вход в аккаунт'}) %>
+</head>
+<body>
+    <%- include('templates/header', {profileIcon: true}) %>
+<ul class="breadcrumbs container">
+    <li class="breadcrumbs__item"><a href="/" class="breadcrumbs__itemLink">Главная</a></li>
+    <li class="breadcrumbs__item">Вход в аккаунт</li>
+</ul>
+<main class="container">
+    <form action="" method="POST" class="authForm">
+        <h1 class="authForm__headline">Авторизация</h1>
+        <% if (err) {%><p class="authForm__text_error text_colorRed">Неправильный логин или пароль</p><%}%>
+        <label class="form__label">
+            <input type="text" value="<%= data.login %>" name="login" class="form__input" autocomplete="off" required>
+            <span class="labelText">Логин</span>
+        </label>
+        <label class="form__label">
+            <input type="password" value="<%= data.password %>" name="password" class="form__input" autocomplete="off" required>
+            <span class="labelText">Пароль</span>
+        </label>
+        <button class="authForm__button button button_sizeL button_colorAccent">Войти</button>
+        <p><br>
+            Student <br>
+            login: student <br>
+            password: student <br>
+            Company <br>
+            login: company <br>
+            password: company <br>
+            Moderator <br>
+            login: modern <br>
+            password: talking
+        </p>
+    </form>
+</main>
+<%- include('templates/footer') %>
+<script>
+    const formInputs = document.querySelectorAll('.form__input');
+
+    const fixedLabel = e => {
+        const labelText = e.parentNode.querySelector('.labelText');
+        if (e.value.length > 0) {
+            labelText.classList.add('labelText_fixed');
+        } else {
+            labelText.classList.remove('labelText_fixed');
+        }
+    };
+
+    formInputs.forEach(e => {
+        fixedLabel(e);
+        e.addEventListener('change', () => {
+            fixedLabel(e);
+        });
+    });
+</script>
+</body>
+</html>
